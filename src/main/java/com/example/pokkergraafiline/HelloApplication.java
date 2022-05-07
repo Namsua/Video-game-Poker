@@ -6,9 +6,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -18,6 +21,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class HelloApplication extends Application {
     @Override
@@ -41,18 +45,29 @@ public class HelloApplication extends Application {
 
         Label info = new Label("Vali kaardid, mida soovid välja vahetada"); //Seda kasutame kasutajaga suhtlemiseks
         info.setFont(Font.font(20));
-        info.setAlignment(Pos.CENTER);
+
+        Label hetkeBilanss = new Label("Bilanss: 100");
+        hetkeBilanss.setFont(Font.font(30));
+        hetkeBilanss.setAlignment(Pos.CENTER_RIGHT);
+
+        //Lubab kasutajal oma panust sisestada
+        TextField hetkePanus = new TextField("Panus");
+        hetkePanus.setFont(Font.font(25));
 
         //5 kaarti koos vastavate nuppudega, mille seast kasutaja peab valiku tegema
         //Igasse kaarti tuleb lisada pilt vastavast kaardist ja nupp
         //Lisame kaartidele vastavad pildid
 
+        //Nime tuleb mängijalt eraldi küsida, seal saaks ka erindite püüdmise sisse tuua
+        Mangija mangija = new Mangija(100, "Keegi Mees");
+        Kontroller kontroller = new Kontroller();
+
         //Hetkel kõigil sama pilt, aga lõpuks tuleb muidugi pilt valida vastavalt kaardile
-        Image kaart1Pilt = new Image("/kaardid/K♥.png");
-        Image kaart2Pilt = new Image("/kaardid/K♥.png");
-        Image kaart3Pilt = new Image("/kaardid/K♥.png");
-        Image kaart4Pilt = new Image("/kaardid/K♥.png");
-        Image kaart5Pilt = new Image("/kaardid/K♥.png");
+        Image kaart1Pilt = new Image("/kaardid/" + mangija.getKaardid().get(0) + ".png");
+        Image kaart2Pilt = new Image("/kaardid/" + mangija.getKaardid().get(1) + ".png");
+        Image kaart3Pilt = new Image("/kaardid/" + mangija.getKaardid().get(2) + ".png");
+        Image kaart4Pilt = new Image("/kaardid/" + mangija.getKaardid().get(3) + ".png");
+        Image kaart5Pilt = new Image("/kaardid/" + mangija.getKaardid().get(4) + ".png");
 
         //Nupud, et kasutaja saaks märkida vastavad kaardid valituks
 
@@ -61,12 +76,14 @@ public class HelloApplication extends Application {
         Button kaart3Nupp = new Button("O");
         Button kaart4Nupp = new Button("O");
         Button kaart5Nupp = new Button("O");
+        Button teostaVahetusNupp = new Button("Vaheta");
 
         kaart1Nupp.setFont(Font.font(30));
         kaart2Nupp.setFont(Font.font(30));
         kaart3Nupp.setFont(Font.font(30));
         kaart4Nupp.setFont(Font.font(30));
         kaart5Nupp.setFont(Font.font(30));
+        teostaVahetusNupp.setFont(Font.font(20));
 
         //Siia võiks midagi huvitavamat mõelda, nt. Button.setStyle()
         EventHandler<MouseEvent> kaardiNupuEvent = event -> {
@@ -91,6 +108,72 @@ public class HelloApplication extends Application {
         ImageView kaart3Kuva = new ImageView(kaart3Pilt);
         ImageView kaart4Kuva = new ImageView(kaart4Pilt);
         ImageView kaart5Kuva = new ImageView(kaart5Pilt);
+
+        //Kui kasutaja vajutab vaheta nuppu
+        teostaVahetusNupp.setOnMouseClicked(e -> {
+            if (teostaVahetusNupp.getText().equals("Vaheta")) {
+
+                //Leiame indeksid, millel kaardid ära vahetada
+                ArrayList<Integer> indeksid = new ArrayList<>();
+
+
+                if (kaart1Nupp.getText().equals("X")) indeksid.add(0);
+                if (kaart2Nupp.getText().equals("X")) indeksid.add(1);
+                if (kaart3Nupp.getText().equals("X")) indeksid.add(2);
+                if (kaart4Nupp.getText().equals("X")) indeksid.add(3);
+                if (kaart5Nupp.getText().equals("X")) indeksid.add(4);
+
+                //Vahetame valitud kaardid välja
+                mangija.vahetaKaardid(indeksid.stream().mapToInt(x -> x).toArray());
+
+                kaart1Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(0) + ".png"));
+                kaart2Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(1) + ".png"));
+                kaart3Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(2) + ".png"));
+                kaart4Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(3) + ".png"));
+                kaart5Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(4) + ".png"));
+
+                String tulemus = kontroller.kontrolliKaarte(mangija.getKaardid()); //Kontrollime, kas kaartide seas leidub mingi võidu kombinatsioon
+
+                if (!tulemus.equals("Mitte midagi")) {
+                    //Kontroller.KÄSITOKORDAJA võimaldab meil kombinatsiooni teades leida vastav kordaja (rohkem leiab Kontroller.java)
+                    double võidusumma = Math.round((double) (Kontroller.KÄSITOKORDAJA.get(tulemus)) * Double.parseDouble(hetkePanus.getText()) * 100.0) / 100.0;
+                    info.setText(tulemus + "! " + "Palju õnne, võitsite " + võidusumma + " karvapalli!");
+
+                    mangija.setHetkeBalanss(mangija.getHetkeBalanss() + võidusumma);
+                    hetkeBilanss.setText("Bilanss: " + mangija.getHetkeBalanss());
+                } else {
+                    info.setText("Kahjuks seekord ei vedanud. Kaotasite " + Double.parseDouble(hetkePanus.getText()) + " karvapalli.");
+                    mangija.setHetkeBalanss(mangija.getHetkeBalanss() - Double.parseDouble(hetkePanus.getText()));
+
+                    if (Math.round(mangija.getHetkeBalanss() * 100.0) / 100.0 <= 0.0) {
+                        System.out.println("Kahjuks said karvapallid otsa, mäng läbi!");
+
+                        //Siin tuleks kuvada mingi alert window et mäng on läbi!
+                        System.out.println("Läbi");
+                    } else {
+                        hetkeBilanss.setText("Bilanss: " + mangija.getHetkeBalanss());
+                    }
+                }
+
+                teostaVahetusNupp.setText("Jaga uued");
+            } else { //Jagame uued kaardid
+                mangija.jagaKaardid();
+
+                kaart1Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(0) + ".png"));
+                kaart2Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(1) + ".png"));
+                kaart3Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(2) + ".png"));
+                kaart4Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(3) + ".png"));
+                kaart5Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(4) + ".png"));
+
+                kaart1Nupp.setText("O");
+                kaart2Nupp.setText("O");
+                kaart3Nupp.setText("O");
+                kaart4Nupp.setText("O");
+                kaart5Nupp.setText("O");
+
+                teostaVahetusNupp.setText("Vaheta");
+            }
+        });
 
         //Siin seame piltidele vastavad suurused, mis on seotud meie root gridpane-iga, et rakendust oleks võimalik resizeida
         //.subtract(100), et nupule jääks ka ruumi
@@ -128,6 +211,9 @@ public class HelloApplication extends Application {
         GridPane.setConstraints(kaart5Nupp, 4, 2);
 
         GridPane.setConstraints(info, 0, 0);
+        GridPane.setConstraints(teostaVahetusNupp, 0, 3);
+        GridPane.setConstraints(hetkeBilanss, 1, 3);
+        GridPane.setConstraints(hetkePanus, 2, 3);
 
         //Lubame info label-il kasutada ära kogu horisontaalse ruumi (ainukene element esimesel real)
         GridPane.setColumnSpan(info, 5);
@@ -150,7 +236,8 @@ public class HelloApplication extends Application {
         column5.setHalignment(HPos.CENTER);
 
         kaardidKoosNuppudega.getChildren().addAll(kaart1Kuva, kaart2Kuva, kaart3Kuva, kaart4Kuva, kaart5Kuva,
-                kaart1Nupp, kaart2Nupp, kaart3Nupp, kaart4Nupp, kaart5Nupp, info);
+                kaart1Nupp, kaart2Nupp, kaart3Nupp, kaart4Nupp, kaart5Nupp, info, teostaVahetusNupp,
+                hetkeBilanss, hetkePanus);
         kaardidKoosNuppudega.getColumnConstraints().addAll(column1, column2, column3, column4, column5);
 
         Scene kaardid = new Scene(kaardidKoosNuppudega, 1000, 500);

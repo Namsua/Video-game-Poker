@@ -9,7 +9,7 @@ public class Peaklass {
         System.out.println("Mängu alustamiseks vajutage Enter klahvi.");
         enter.nextLine();
 
-        Mangija mängija = new Mangija(10);
+        Mangija mängija = new Mangija(10, "Keegi Mees");
         Kontroller kontrollija = new Kontroller();
 
         String vahetus, tulemus;

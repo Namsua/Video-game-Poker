@@ -6,10 +6,12 @@ public class Mangija {
     private ArrayList<Kaart> kaardid; //See list kirjutatakse iga kaartide genereerimisega üle
     private Pakk pakk = new Pakk();
     private double hetkeBalanss; //Kuvame kasutajale, palju tal hetkel raha on. Kui 0 siis mäng läbi
+    private String nimi;
 
-    public Mangija(double hetkeBalanss) {
+    public Mangija(double hetkeBalanss, String nimi) {
         this.hetkeBalanss = hetkeBalanss;
         jagaKaardid(); //Jagame kaardid siin, et vältida päringuid initialiseerimata muutujast
+        this.nimi = nimi;
     }
 
     public ArrayList<Kaart> getKaardid() {
