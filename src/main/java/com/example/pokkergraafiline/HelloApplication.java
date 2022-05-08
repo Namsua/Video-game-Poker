@@ -1,6 +1,8 @@
 package com.example.pokkergraafiline;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
@@ -9,6 +11,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -17,12 +20,19 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
+//TODO Implementeerida mingisugune highscore süsteem, mis täidaks faili kirjutamise/lugemise tingimuse
+//TODO Lisada Cash Out nupp, et mängija saaks oma tulemuse edetabelisse salvestada
+//TODO Üldine disain/värvilahendused
+//TODO Mingisugune erindi püüdmine, valideeri() juba teeb natukene, aga oodatakse vist rohkem
+//TODO Peamenüü
+//TODO Mängija nime sisestamine (mingisuguse eraldi alert aknana)
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
@@ -43,7 +53,7 @@ public class HelloApplication extends Application {
         kaardidKoosNuppudega.setHgap(10);
         kaardidKoosNuppudega.setVgap(20);
 
-        Label info = new Label("Vali kaardid, mida soovid välja vahetada"); //Seda kasutame kasutajaga suhtlemiseks
+        Label info = new Label("Sisesta soovitud panus"); //Seda kasutame kasutajaga suhtlemiseks
         info.setFont(Font.font(20));
 
         Label hetkeBilanss = new Label("Bilanss: 100");
@@ -51,7 +61,8 @@ public class HelloApplication extends Application {
         hetkeBilanss.setAlignment(Pos.CENTER_RIGHT);
 
         //Lubab kasutajal oma panust sisestada
-        TextField hetkePanus = new TextField("Panus");
+        TextField hetkePanus = new TextField();
+        hetkePanus.setPromptText("Panus");
         hetkePanus.setFont(Font.font(25));
 
         //5 kaarti koos vastavate nuppudega, mille seast kasutaja peab valiku tegema
@@ -62,12 +73,17 @@ public class HelloApplication extends Application {
         Mangija mangija = new Mangija(100, "Keegi Mees");
         Kontroller kontroller = new Kontroller();
 
-        //Hetkel kõigil sama pilt, aga lõpuks tuleb muidugi pilt valida vastavalt kaardile
-        Image kaart1Pilt = new Image("/kaardid/" + mangija.getKaardid().get(0) + ".png");
-        Image kaart2Pilt = new Image("/kaardid/" + mangija.getKaardid().get(1) + ".png");
-        Image kaart3Pilt = new Image("/kaardid/" + mangija.getKaardid().get(2) + ".png");
-        Image kaart4Pilt = new Image("/kaardid/" + mangija.getKaardid().get(3) + ".png");
-        Image kaart5Pilt = new Image("/kaardid/" + mangija.getKaardid().get(4) + ".png");
+        //Kasutame kasutajale mängu lõpust teatamiseks
+        Alert mängLäbiAlert = new Alert(Alert.AlertType.INFORMATION);
+        mängLäbiAlert.setTitle("Mäng läbi!");
+        mängLäbiAlert.setHeaderText("Kahjuks said karvapallid otsa!");
+
+        //Alguses kuvame kaartide taguse, kuna panust pole veel tehtud
+        Image kaart1Pilt = new Image("/kaardid/tagus.png");
+        Image kaart2Pilt = new Image("/kaardid/tagus.png");
+        Image kaart3Pilt = new Image("/kaardid/tagus.png");
+        Image kaart4Pilt = new Image("/kaardid/tagus.png");
+        Image kaart5Pilt = new Image("/kaardid/tagus.png");
 
         //Nupud, et kasutaja saaks märkida vastavad kaardid valituks
 
@@ -76,7 +92,8 @@ public class HelloApplication extends Application {
         Button kaart3Nupp = new Button("O");
         Button kaart4Nupp = new Button("O");
         Button kaart5Nupp = new Button("O");
-        Button teostaVahetusNupp = new Button("Vaheta");
+        Button teostaVahetusNupp = new Button("Vaata kaarte");
+        teostaVahetusNupp.setDisable(true);
 
         kaart1Nupp.setFont(Font.font(30));
         kaart2Nupp.setFont(Font.font(30));
@@ -85,7 +102,19 @@ public class HelloApplication extends Application {
         kaart5Nupp.setFont(Font.font(30));
         teostaVahetusNupp.setFont(Font.font(20));
 
-        //Siia võiks midagi huvitavamat mõelda, nt. Button.setStyle()
+        //Lisame panuse sisestus väljale kontrolli, et sisestatu oleks ikka õige
+        hetkePanus.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!valideeri(newValue, mangija.getHetkeBalanss())) {
+                teostaVahetusNupp.setDisable(true);
+
+                hetkePanus.setStyle(" -fx-text-box-border: red; -fx-focus-color: red ;");
+            } else {
+                teostaVahetusNupp.setDisable(false);
+                hetkePanus.setStyle("");
+            }
+        });
+
+        //Vahetab kaardi aluseid nuppue vastavalt "X" või "O"
         EventHandler<MouseEvent> kaardiNupuEvent = event -> {
             Button vajutatudNupp = (Button) event.getSource();
 
@@ -146,30 +175,50 @@ public class HelloApplication extends Application {
                     mangija.setHetkeBalanss(mangija.getHetkeBalanss() - Double.parseDouble(hetkePanus.getText()));
 
                     if (Math.round(mangija.getHetkeBalanss() * 100.0) / 100.0 <= 0.0) {
-                        System.out.println("Kahjuks said karvapallid otsa, mäng läbi!");
-
-                        //Siin tuleks kuvada mingi alert window et mäng on läbi!
-                        System.out.println("Läbi");
+                        hetkeBilanss.setText("Bilanss: 0");
+                        mängLäbiAlert.show();
                     } else {
                         hetkeBilanss.setText("Bilanss: " + mangija.getHetkeBalanss());
                     }
                 }
 
                 teostaVahetusNupp.setText("Jaga uued");
-            } else { //Jagame uued kaardid
-                mangija.jagaKaardid();
-
-                kaart1Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(0) + ".png"));
-                kaart2Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(1) + ".png"));
-                kaart3Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(2) + ".png"));
-                kaart4Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(3) + ".png"));
-                kaart5Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(4) + ".png"));
+            } else if (teostaVahetusNupp.getText().equals("Jaga uued")){ //Jagame uued kaardid
+                kaart1Kuva.setImage(new Image("/kaardid/tagus.png"));
+                kaart2Kuva.setImage(new Image("/kaardid/tagus.png"));
+                kaart3Kuva.setImage(new Image("/kaardid/tagus.png"));
+                kaart4Kuva.setImage(new Image("/kaardid/tagus.png"));
+                kaart5Kuva.setImage(new Image("/kaardid/tagus.png"));
 
                 kaart1Nupp.setText("O");
                 kaart2Nupp.setText("O");
                 kaart3Nupp.setText("O");
                 kaart4Nupp.setText("O");
                 kaart5Nupp.setText("O");
+
+                teostaVahetusNupp.setText("Vaata kaarte");
+                info.setText("Sisesta soovitud panus");
+                hetkePanus.setDisable(false);
+
+                //Kuna kaotades võib juhtuda, et eelmine sisestatud panus on liiga kõrga, teeme ka siin validatsiooni
+                if (!valideeri(hetkePanus.getText(), mangija.getHetkeBalanss())) {
+                    teostaVahetusNupp.setDisable(true);
+
+                    hetkePanus.setStyle(" -fx-text-box-border: red; -fx-focus-color: red ;");
+                } else {
+                    teostaVahetusNupp.setDisable(false);
+                    hetkePanus.setStyle("");
+                }
+            } else { //Asendame kaardi tagused kaartide enditega
+                mangija.jagaKaardid();
+                hetkePanus.setDisable(true);
+                info.setText("Vali kaardid, mida soovid vahetada");
+
+                kaart1Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(0) + ".png"));
+                kaart2Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(1) + ".png"));
+                kaart3Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(2) + ".png"));
+                kaart4Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(3) + ".png"));
+                kaart5Kuva.setImage(new Image("/kaardid/" + mangija.getKaardid().get(4) + ".png"));
 
                 teostaVahetusNupp.setText("Vaheta");
             }
@@ -213,7 +262,7 @@ public class HelloApplication extends Application {
         GridPane.setConstraints(info, 0, 0);
         GridPane.setConstraints(teostaVahetusNupp, 0, 3);
         GridPane.setConstraints(hetkeBilanss, 1, 3);
-        GridPane.setConstraints(hetkePanus, 2, 3);
+        GridPane.setConstraints(hetkePanus, 4, 3);
 
         //Lubame info label-il kasutada ära kogu horisontaalse ruumi (ainukene element esimesel real)
         GridPane.setColumnSpan(info, 5);
@@ -240,13 +289,32 @@ public class HelloApplication extends Application {
                 hetkeBilanss, hetkePanus);
         kaardidKoosNuppudega.getColumnConstraints().addAll(column1, column2, column3, column4, column5);
 
-        Scene kaardid = new Scene(kaardidKoosNuppudega, 1000, 500);
+        Scene kaardid = new Scene(kaardidKoosNuppudega, 1000, 600);
+        kaardidKoosNuppudega.setBackground(Background.fill(Color.KHAKI));
 
         stage.setScene(kaardid);
 
         stage.show();
     }
 
+    /**
+     * Valideerib, et sisestatud panus oleks sobilik
+     * @param a
+     * @return
+     */
+    private static boolean valideeri(String a, double bilanss) {
+        try {
+            double sisestatudVäärtus = Double.parseDouble(a);
+
+            if (sisestatudVäärtus <= bilanss && sisestatudVäärtus > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
     public static void main(String[] args) {
         launch();
     }
