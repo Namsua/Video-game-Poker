@@ -11,10 +11,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -24,29 +21,44 @@ import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 //TODO Implementeerida mingisugune highscore süsteem, mis täidaks faili kirjutamise/lugemise tingimuse
 //TODO Lisada Cash Out nupp, et mängija saaks oma tulemuse edetabelisse salvestada
 //TODO Üldine disain/värvilahendused
 //TODO Mingisugune erindi püüdmine, valideeri() juba teeb natukene, aga oodatakse vist rohkem
-//TODO Peamenüü
 //TODO Mängija nime sisestamine (mingisuguse eraldi alert aknana)
 public class HelloApplication extends Application {
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) throws Exception {
         stage.setTitle("VideoPokker");
 
-        VBox avamenüü = new VBox(10); //Menüü, mis rakenduse käivitudes kasutajale kuvatakse
-        avamenüü.setAlignment(Pos.BASELINE_CENTER);
+        BorderPane avamenüü = new BorderPane(); //Esimene tseen, mis kasutajale kuvatakse
+        VBox avamenüüValikud = new VBox(15);
+        avamenüüValikud.setAlignment(Pos.TOP_CENTER);
+        VBox tabloo = new VBox(10); //Kuvab kasutajale tema parimad tulemused
+        Label logo = new Label("VideoPokker"); //Hetkel placeholder, pärast siia panna mingi pilt
+        logo.setFont(Font.font(50));
+        BorderPane.setAlignment(logo, Pos.CENTER);
+
+        Label tulemusPlaceholder = new Label("Siia tulevad parimad tulemused");
+        tulemusPlaceholder.setFont(Font.font(15));
+        tabloo.getChildren().add(tulemusPlaceholder);
+
+        avamenüü.setCenter(avamenüüValikud);
+        avamenüü.setRight(tabloo);
+        avamenüü.setTop(logo);
 
         Button alustaMänguNupp = new Button("Alusta mängu"); //Nupu vajutusel vahetub stseen mängu tseeniga
-        Button kuvaEdetabelNupp = new Button("Edetabel"); //Kuvab edetabeli stseeni
+        Button reeglid = new Button("Reeglid"); //Kirjeldab mängu põhimõtte ja erinevad võidukombinatsioonid
+        alustaMänguNupp.setFont(Font.font(18));
+        reeglid.setFont(Font.font(18));
 
-        avamenüü.getChildren().addAll(alustaMänguNupp, kuvaEdetabelNupp);
+        avamenüüValikud.getChildren().addAll(alustaMänguNupp, reeglid);
 
-        Scene avamenüüStseen = new Scene(avamenüü, 500, 500);
+        Scene avamenüüStseen = new Scene(avamenüü, 500, 700);
 
         //Layoutina kasutame gridpane-i, kus esimene rida on kaardi pildid ja teine rida vastavad nupud
         GridPane kaardidKoosNuppudega = new GridPane();
@@ -70,7 +82,7 @@ public class HelloApplication extends Application {
         //Lisame kaartidele vastavad pildid
 
         //Nime tuleb mängijalt eraldi küsida, seal saaks ka erindite püüdmise sisse tuua
-        Mangija mangija = new Mangija(100, "Keegi Mees");
+        Mangija mangija = new Mangija(100, "placeholder");
         Kontroller kontroller = new Kontroller();
 
         //Kasutame kasutajale mängu lõpust teatamiseks
@@ -94,6 +106,8 @@ public class HelloApplication extends Application {
         Button kaart5Nupp = new Button("O");
         Button teostaVahetusNupp = new Button("Vaata kaarte");
         teostaVahetusNupp.setDisable(true);
+        Button cashOut = new Button("Cash out");
+        cashOut.setFont(Font.font(20));
 
         kaart1Nupp.setFont(Font.font(30));
         kaart2Nupp.setFont(Font.font(30));
@@ -176,7 +190,8 @@ public class HelloApplication extends Application {
 
                     if (Math.round(mangija.getHetkeBalanss() * 100.0) / 100.0 <= 0.0) {
                         hetkeBilanss.setText("Bilanss: 0");
-                        mängLäbiAlert.show();
+                        mängLäbiAlert.showAndWait();
+                        stage.setScene(avamenüüStseen);
                     } else {
                         hetkeBilanss.setText("Bilanss: " + mangija.getHetkeBalanss());
                     }
@@ -224,6 +239,16 @@ public class HelloApplication extends Application {
             }
         });
 
+        cashOut.setOnMouseClicked(e -> {
+            try {
+                kirjutaTulemusFaili(mangija.getNimi(), mangija.getHetkeBalanss());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+
+            stage.setScene(avamenüüStseen);
+        });
+
         //Siin seame piltidele vastavad suurused, mis on seotud meie root gridpane-iga, et rakendust oleks võimalik resizeida
         //.subtract(100), et nupule jääks ka ruumi
         kaart1Kuva.fitHeightProperty().bind(kaardidKoosNuppudega.heightProperty().subtract(100));
@@ -262,7 +287,8 @@ public class HelloApplication extends Application {
         GridPane.setConstraints(info, 0, 0);
         GridPane.setConstraints(teostaVahetusNupp, 0, 3);
         GridPane.setConstraints(hetkeBilanss, 1, 3);
-        GridPane.setConstraints(hetkePanus, 4, 3);
+        GridPane.setConstraints(hetkePanus, 3, 3);
+        GridPane.setConstraints(cashOut, 4, 3);
 
         //Lubame info label-il kasutada ära kogu horisontaalse ruumi (ainukene element esimesel real)
         GridPane.setColumnSpan(info, 5);
@@ -286,13 +312,24 @@ public class HelloApplication extends Application {
 
         kaardidKoosNuppudega.getChildren().addAll(kaart1Kuva, kaart2Kuva, kaart3Kuva, kaart4Kuva, kaart5Kuva,
                 kaart1Nupp, kaart2Nupp, kaart3Nupp, kaart4Nupp, kaart5Nupp, info, teostaVahetusNupp,
-                hetkeBilanss, hetkePanus);
+                hetkeBilanss, cashOut, hetkePanus);
         kaardidKoosNuppudega.getColumnConstraints().addAll(column1, column2, column3, column4, column5);
 
         Scene kaardid = new Scene(kaardidKoosNuppudega, 1000, 600);
         kaardidKoosNuppudega.setBackground(Background.fill(Color.KHAKI));
 
-        stage.setScene(kaardid);
+        alustaMänguNupp.setOnMouseClicked(e -> {
+            TextInputDialog sisend = new TextInputDialog("Mängija nimi");
+            sisend.setHeaderText("Sisesta oma nimi");
+
+            sisend.showAndWait();
+            mangija.setHetkeBalanss(100);
+            mangija.setNimi(sisend.getEditor().getText());
+
+            stage.setScene(kaardid);
+        });
+
+        stage.setScene(avamenüüStseen);
 
         stage.show();
     }
@@ -315,7 +352,52 @@ public class HelloApplication extends Application {
             return false;
         }
     }
-    public static void main(String[] args) {
+
+    private static void kirjutaTulemusFaili(String nimi, double tulemus) throws Exception{
+        //Kirjutame tulemuse faili vaid siis, kui see mahub top 10sse
+
+        String rida;
+
+        try (BufferedReader sisend = new BufferedReader(new InputStreamReader(new FileInputStream("parimadtulemused.txt"), StandardCharsets.UTF_8))) {
+            ArrayList<String> parimadNimed  = new ArrayList<>();
+            ArrayList<Double> parimadTulemused = new ArrayList<>();
+
+            while ((rida = sisend.readLine()) != null) {
+                String[] jupid = rida.split(":");
+
+                parimadNimed.add(jupid[0]);
+                parimadTulemused.add(Double.parseDouble(jupid[1]));
+            }
+
+            //Lisame need listi lõpu olukorra jaoks, kui edetabelis pole veel kõiki 10 tulemust
+            parimadNimed.add(nimi);
+            parimadTulemused.add(tulemus);
+
+            //Nüüd vaatame, kas antud tulemus on top10 seas
+
+            for (int i = 0; i < parimadTulemused.size() && i < 10; i++) {
+                if (tulemus > parimadTulemused.get(i)) {
+                    parimadTulemused.add(i, tulemus);
+                    parimadNimed.add(i, nimi);
+                    break;
+                }
+            }
+
+            //Nüüd tuleb see list lihtsalt faili tagasi kirjutada
+
+            try (BufferedWriter väljund = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("parimadtulemused.txt"), StandardCharsets.UTF_8))) {
+                for (int i = 0; i < parimadNimed.size() && i < 10; i++) {
+                    väljund.write( parimadNimed.get(i) + ":" + parimadTulemused.get(i) + "\n");
+                }
+            }
+        } catch (FileNotFoundException e) { //Ainukene erind, millest taastuda saame
+            //Sisestatud tulemus on esimene, peame uue faili looma
+            try (BufferedWriter väljund = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("parimadtulemused.txt"), StandardCharsets.UTF_8))) {
+                väljund.write(nimi + ":" + tulemus + "\n");
+            }
+        }
+    }
+    public static void main(String[] args) throws Exception{
         launch();
     }
 }

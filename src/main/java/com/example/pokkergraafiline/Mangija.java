@@ -23,6 +23,13 @@ public class Mangija {
     }
 
     public void setHetkeBalanss(double s) {this.hetkeBalanss = s;}
+    public void setNimi(String nimi) {
+        this.nimi = nimi;
+    }
+
+    public String getNimi() {
+        return nimi;
+    }
 
     /**
      * Genereerib 5 uut kaarti ja seob need mängijaga
