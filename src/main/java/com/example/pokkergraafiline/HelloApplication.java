@@ -1,15 +1,9 @@
 package com.example.pokkergraafiline;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -17,7 +11,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -43,9 +36,11 @@ public class HelloApplication extends Application {
         logo.setFont(Font.font(50));
         BorderPane.setAlignment(logo, Pos.CENTER);
 
-        Label tulemusPlaceholder = new Label("Siia tulevad parimad tulemused");
-        tulemusPlaceholder.setFont(Font.font(15));
-        tabloo.getChildren().add(tulemusPlaceholder);
+        Label parimad = new Label("Parimad mängijad: ");
+        Label tulemused = new Label(kuvaTulemusFailist());
+        parimad.setFont(Font.font(20));
+        tulemused.setFont(Font.font(15));
+        tabloo.getChildren().addAll(parimad,tulemused);
 
         avamenüü.setCenter(avamenüüValikud);
         avamenüü.setRight(tabloo);
@@ -387,16 +382,36 @@ public class HelloApplication extends Application {
 
             try (BufferedWriter väljund = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("parimadtulemused.txt"), StandardCharsets.UTF_8))) {
                 for (int i = 0; i < parimadNimed.size() && i < 10; i++) {
-                    väljund.write( parimadNimed.get(i) + ":" + parimadTulemused.get(i) + "\n");
+                    väljund.write( parimadNimed.get(i) + ": " + parimadTulemused.get(i) + "\n");
                 }
             }
         } catch (FileNotFoundException e) { //Ainukene erind, millest taastuda saame
             //Sisestatud tulemus on esimene, peame uue faili looma
             try (BufferedWriter väljund = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("parimadtulemused.txt"), StandardCharsets.UTF_8))) {
-                väljund.write(nimi + ":" + tulemus + "\n");
+                väljund.write(nimi + ": " + tulemus + "\n");
             }
         }
     }
+
+    //Loeb tulemused failist ja kuvab need
+    private static String kuvaTulemusFailist(){
+        StringBuilder tulemustetekst = new StringBuilder();
+        String skoor;
+
+        try (FileInputStream tulemused = new FileInputStream("parimadtulemused.txt");
+             InputStreamReader isr = new InputStreamReader(tulemused, StandardCharsets.UTF_8);
+             BufferedReader tulemusteread = new BufferedReader(isr)
+        ) {
+            while ((skoor = tulemusteread.readLine()) != null) {
+                tulemustetekst.append(skoor).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return String.valueOf(tulemustetekst);
+    }
+
     public static void main(String[] args) throws Exception{
         launch();
     }
