@@ -18,12 +18,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Optional;
 
-//TODO Implementeerida mingisugune highscore süsteem, mis täidaks faili kirjutamise/lugemise tingimuse
-//TODO Lisada Cash Out nupp, et mängija saaks oma tulemuse edetabelisse salvestada
-//TODO Üldine disain/värvilahendused
-//TODO Mingisugune erindi püüdmine, valideeri() juba teeb natukene, aga oodatakse vist rohkem
-//TODO Mängija nime sisestamine (mingisuguse eraldi alert aknana)
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
@@ -35,7 +31,6 @@ public class HelloApplication extends Application {
         VBox tabloo = new VBox(10); //Kuvab kasutajale tema parimad tulemused
         tabloo.setAlignment(Pos.TOP_LEFT);
         VBox logo = new VBox(10); //VBox avalehe logo jaoks
-
 
         //Avalehe pilt
         Image avalehepilt = new Image(Paths.get("build/resources/main/Videopoker.png").toUri().toString());
@@ -327,45 +322,52 @@ public class HelloApplication extends Application {
             TextInputDialog sisend = new TextInputDialog("Mängija nimi");
             sisend.setHeaderText("Sisesta oma nimi");
 
-            sisend.showAndWait();
-            mangija.setHetkeBalanss(100);
-            mangija.setNimi(sisend.getEditor().getText());
+            //Kontrollib kas kasutaja vajutab ok nuppu, vastasel juhul naaseb avaaknale
+            Optional<String> ok = sisend.showAndWait();
+            if (ok.isPresent()) {
+                mangija.setHetkeBalanss(100);
+                mangija.setNimi(sisend.getEditor().getText());
 
-            kaart1Kuva.setImage(new Image("/kaardid/tagus.png"));
-            kaart2Kuva.setImage(new Image("/kaardid/tagus.png"));
-            kaart3Kuva.setImage(new Image("/kaardid/tagus.png"));
-            kaart4Kuva.setImage(new Image("/kaardid/tagus.png"));
-            kaart5Kuva.setImage(new Image("/kaardid/tagus.png"));
+                kaart1Kuva.setImage(new Image("/kaardid/tagus.png"));
+                kaart2Kuva.setImage(new Image("/kaardid/tagus.png"));
+                kaart3Kuva.setImage(new Image("/kaardid/tagus.png"));
+                kaart4Kuva.setImage(new Image("/kaardid/tagus.png"));
+                kaart5Kuva.setImage(new Image("/kaardid/tagus.png"));
 
-            kaart1Nupp.setText("O");
-            kaart2Nupp.setText("O");
-            kaart3Nupp.setText("O");
-            kaart4Nupp.setText("O");
-            kaart5Nupp.setText("O");
+                kaart1Nupp.setText("O");
+                kaart2Nupp.setText("O");
+                kaart3Nupp.setText("O");
+                kaart4Nupp.setText("O");
+                kaart5Nupp.setText("O");
 
-            hetkeBilanss.setText("Bilanss: " + mangija.getHetkeBalanss());
+                hetkeBilanss.setText("Bilanss: " + mangija.getHetkeBalanss());
 
-            teostaVahetusNupp.setText("Vaata kaarte");
-            info.setText("Sisesta soovitud panus");
-            hetkePanus.setDisable(false);
+                teostaVahetusNupp.setText("Vaata kaarte");
+                info.setText("Sisesta soovitud panus");
+                hetkePanus.setDisable(false);
 
-            stage.setScene(kaardid);
+                stage.setScene(kaardid);
+            } else {
+                stage.setScene(avamenüüStseen);
+            }
         });
 
-        //Reeglid
+        //Reegliteaken
         VBox reegliteV = new VBox(15);
         reegliteV.setAlignment(Pos.TOP_CENTER);
 
-        Button tagasi = new Button("Tagasi"); //Tagasi avalehele
-        tagasi.setFont(Font.font(18));
-
-        Scene reegliS = new Scene(reegliteV, 1000, 500);
         Label reeglitiitel = new Label("Reeglid:");
         reeglitiitel.setFont(Font.font(20));
         Label reegliL = new Label(kuvaTulemusFailist("reeglid.txt"));
         reegliL.setWrapText(true);
         reegliL.setFont(Font.font(15));
+
+        //Tagasi avaaknale
+        Button tagasi = new Button("Tagasi");
+        tagasi.setFont(Font.font(18));
+
         reegliteV.getChildren().addAll(reeglitiitel, reegliL, tagasi);
+        Scene reegliS = new Scene(reegliteV, 1000, 500);
 
         reeglid.setOnMouseClicked(e -> {
             stage.setScene(reegliS);
