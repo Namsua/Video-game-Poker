@@ -37,7 +37,7 @@ public class HelloApplication extends Application {
         BorderPane.setAlignment(logo, Pos.CENTER);
 
         Label parimad = new Label("Parimad mängijad: ");
-        Label tulemused = new Label(kuvaTulemusFailist());
+        Label tulemused = new Label(kuvaTulemusFailist("parimadtulemused.txt"));
         parimad.setFont(Font.font(20));
         tulemused.setFont(Font.font(15));
         tabloo.getChildren().addAll(parimad,tulemused);
@@ -237,6 +237,7 @@ public class HelloApplication extends Application {
         cashOut.setOnMouseClicked(e -> {
             try {
                 kirjutaTulemusFaili(mangija.getNimi(), mangija.getHetkeBalanss());
+                tulemused.setText(kuvaTulemusFailist("parimadtulemused.txt"));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -324,8 +325,29 @@ public class HelloApplication extends Application {
             stage.setScene(kaardid);
         });
 
-        stage.setScene(avamenüüStseen);
+        //Reeglid
+        VBox reegliteV = new VBox(15);
+        reegliteV.setAlignment(Pos.TOP_CENTER);
 
+        Button tagasi = new Button("Tagasi"); //Tagasi avalehele
+        tagasi.setFont(Font.font(18));
+
+        Scene reegliS = new Scene(reegliteV, 1000, 500);
+        Label reeglitiitel = new Label("Reeglid:");
+        reeglitiitel.setFont(Font.font(20));
+        Label reegliL = new Label(kuvaTulemusFailist("reeglid.txt"));
+        reegliL.setFont(Font.font(15));
+        reegliteV.getChildren().addAll(reeglitiitel, reegliL, tagasi);
+
+        reeglid.setOnMouseClicked(e -> {
+            stage.setScene(reegliS);
+        });
+
+        tagasi.setOnMouseClicked(e -> {
+            stage.setScene(avamenüüStseen);
+        });
+
+        stage.setScene(avamenüüStseen);
         stage.show();
     }
 
@@ -394,16 +416,16 @@ public class HelloApplication extends Application {
     }
 
     //Loeb tulemused failist ja kuvab need
-    private static String kuvaTulemusFailist(){
+    private static String kuvaTulemusFailist(String fail){
         StringBuilder tulemustetekst = new StringBuilder();
-        String skoor;
+        String tekst;
 
-        try (FileInputStream tulemused = new FileInputStream("parimadtulemused.txt");
+        try (FileInputStream tulemused = new FileInputStream(fail);
              InputStreamReader isr = new InputStreamReader(tulemused, StandardCharsets.UTF_8);
              BufferedReader tulemusteread = new BufferedReader(isr)
         ) {
-            while ((skoor = tulemusteread.readLine()) != null) {
-                tulemustetekst.append(skoor).append("\n");
+            while ((tekst = tulemusteread.readLine()) != null) {
+                tulemustetekst.append(tekst).append("\n");
             }
         } catch (IOException e) {
             e.printStackTrace();

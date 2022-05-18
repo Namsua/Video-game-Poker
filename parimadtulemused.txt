@@ -1,3 +1,2 @@
 Fent: 796.0
-Mängija nimi: 100.0
-
+mann: 200.0

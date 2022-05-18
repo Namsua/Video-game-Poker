@@ -1,0 +1,13 @@
+Mängid "maja" vastu pokkerit. Iga raund määrad soovitud panuse ja valid kaardid, mida vahetada, et saada parim kombinatsioon.
+Mäng lõppeb, kui bilanss on 0 või kui mängija vajutab "Cash Out" nuppu, et salvestada skoor edetabelisse, kui see mahub top 10 parima sekka.
+
+Võidukombinatsioonid:
+*1 paar – kaks ühesugust soldatit, emandat, kuningat ja ässa
+*2 paari – kaks paari ühesuguseid kaarte, näiteks kuningad ja ässad
+*Kolmik – kolm ühesugust kaarti, näiteks seitsmed
+*Rida – viis järjestikust kaarti, näiteks 3, 4, 5, 6 ja 7
+*Mast – viis ühest mastist kaarti, näiteks ärtud
+*Maja – kaks pluss kolm ühesugust kaarti, näiteks kaks ässa ja kolm viit
+*Nelik – neli ühesugust kaarti, näiteks kuued
+*Mastirida – viis ühest mastist järjestikust kaarti, näiteks poti masti 9, kümme, poiss, emand ja kuningas
+*Kuninglik mastirida – ühest mastist rida, mis algab kümne ning lõpeb ässaga, näiteks ruutu mastist kümme, poiss, emand, kuningas ja äss.
