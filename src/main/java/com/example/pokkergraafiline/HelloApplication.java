@@ -27,13 +27,13 @@ public class HelloApplication extends Application {
 
         BorderPane avamenüü = new BorderPane(); //Esimene tseen, mis kasutajale kuvatakse
         VBox avamenüüValikud = new VBox(15);
-        avamenüüValikud.setAlignment(Pos.BASELINE_CENTER);
+        avamenüüValikud.setAlignment(Pos.TOP_CENTER);
         VBox tabloo = new VBox(10); //Kuvab kasutajale tema parimad tulemused
         tabloo.setAlignment(Pos.TOP_LEFT);
         VBox logo = new VBox(10); //VBox avalehe logo jaoks
 
         //Avalehe pilt
-        Image avalehepilt = new Image(Paths.get("build/resources/main/Videopoker.png").toUri().toString());
+        Image avalehepilt = new Image(Paths.get("src/main/resources/Videopoker.png").toUri().toString());
         ImageView avalehepildikuva = new ImageView(avalehepilt);
         avalehepildikuva.fitWidthProperty().bind(stage.widthProperty());
         avalehepildikuva.setPreserveRatio(true);
@@ -41,7 +41,7 @@ public class HelloApplication extends Application {
 
         //Parimate mängijate tabel
         Label parimad = new Label("Parimad mängijad:               ");
-        Label tulemused = new Label(kuvaTulemusFailist("parimadtulemused.txt"));  //Kuvab parimad mängijad tekstina
+        Label tulemused = new Label(kuvaTulemusFailist("src/main/resources/parimadtulemused.txt"));  //Kuvab parimad mängijad tekstina
         parimad.setFont(Font.font(20));
         tulemused.setFont(Font.font(15));
         tabloo.getChildren().addAll(parimad,tulemused);
@@ -241,7 +241,7 @@ public class HelloApplication extends Application {
         cashOut.setOnMouseClicked(e -> {
             try {
                 kirjutaTulemusFaili(mangija.getNimi(), mangija.getHetkeBalanss());
-                tulemused.setText(kuvaTulemusFailist("parimadtulemused.txt"));
+                tulemused.setText(kuvaTulemusFailist("src/main/resources/parimadtulemused.txt"));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -358,7 +358,7 @@ public class HelloApplication extends Application {
 
         Label reeglitiitel = new Label("Reeglid:");
         reeglitiitel.setFont(Font.font(20));
-        Label reegliL = new Label(kuvaTulemusFailist("reeglid.txt"));
+        Label reegliL = new Label(kuvaTulemusFailist("src/main/resources/reeglid.txt"));
         reegliL.setWrapText(true);
         reegliL.setFont(Font.font(15));
 
@@ -405,7 +405,7 @@ public class HelloApplication extends Application {
 
         String rida;
 
-        try (BufferedReader sisend = new BufferedReader(new InputStreamReader(new FileInputStream("parimadtulemused.txt"), StandardCharsets.UTF_8))) {
+        try (BufferedReader sisend = new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/parimadtulemused.txt"), StandardCharsets.UTF_8))) {
             ArrayList<String> parimadNimed  = new ArrayList<>();
             ArrayList<Double> parimadTulemused = new ArrayList<>();
 
@@ -432,14 +432,14 @@ public class HelloApplication extends Application {
 
             //Nüüd tuleb see list lihtsalt faili tagasi kirjutada
 
-            try (BufferedWriter väljund = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("parimadtulemused.txt"), StandardCharsets.UTF_8))) {
+            try (BufferedWriter väljund = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("src/main/resources/parimadtulemused.txt"), StandardCharsets.UTF_8))) {
                 for (int i = 0; i < parimadNimed.size() && i < 10; i++) {
                     väljund.write( parimadNimed.get(i) + ": " + parimadTulemused.get(i) + "\n");
                 }
             }
         } catch (FileNotFoundException e) { //Ainukene erind, millest taastuda saame
             //Sisestatud tulemus on esimene, peame uue faili looma
-            try (BufferedWriter väljund = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("parimadtulemused.txt"), StandardCharsets.UTF_8))) {
+            try (BufferedWriter väljund = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("src/main/resources/parimadtulemused.txt"), StandardCharsets.UTF_8))) {
                 väljund.write(nimi + ": " + tulemus + "\n");
             }
         }
