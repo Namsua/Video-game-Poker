@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 //TODO Implementeerida mingisugune highscore süsteem, mis täidaks faili kirjutamise/lugemise tingimuse
@@ -26,18 +27,26 @@ import java.util.ArrayList;
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        stage.setTitle("VideoPokker");
+        stage.setTitle("VideoPoker");
 
         BorderPane avamenüü = new BorderPane(); //Esimene tseen, mis kasutajale kuvatakse
         VBox avamenüüValikud = new VBox(15);
-        avamenüüValikud.setAlignment(Pos.TOP_CENTER);
+        avamenüüValikud.setAlignment(Pos.BASELINE_CENTER);
         VBox tabloo = new VBox(10); //Kuvab kasutajale tema parimad tulemused
-        Label logo = new Label("VideoPokker"); //Hetkel placeholder, pärast siia panna mingi pilt
-        logo.setFont(Font.font(50));
-        BorderPane.setAlignment(logo, Pos.CENTER);
+        tabloo.setAlignment(Pos.TOP_LEFT);
+        VBox logo = new VBox(10); //VBox avalehe logo jaoks
 
-        Label parimad = new Label("Parimad mängijad: ");
-        Label tulemused = new Label(kuvaTulemusFailist("parimadtulemused.txt"));
+
+        //Avalehe pilt
+        Image avalehepilt = new Image(Paths.get("build/resources/main/Videopoker.png").toUri().toString());
+        ImageView avalehepildikuva = new ImageView(avalehepilt);
+        avalehepildikuva.fitWidthProperty().bind(stage.widthProperty());
+        avalehepildikuva.setPreserveRatio(true);
+        logo.getChildren().add(avalehepildikuva);
+
+        //Parimate mängijate tabel
+        Label parimad = new Label("Parimad mängijad:               ");
+        Label tulemused = new Label(kuvaTulemusFailist("parimadtulemused.txt"));  //Kuvab parimad mängijad tekstina
         parimad.setFont(Font.font(20));
         tulemused.setFont(Font.font(15));
         tabloo.getChildren().addAll(parimad,tulemused);

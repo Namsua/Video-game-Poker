@@ -1,8 +1,9 @@
-Mängid "maja" vastu pokkerit. Iga raund määrad soovitud panuse ja valid kaardid, mida vahetada, et saada parim kombinatsioon.
+Mängid "maja" vastu pokkerit. Iga raund määrad soovitud panuse ja arvuti jagab sulle kaardid.
+Valid kaardid, mida soovid vahetada, seejärel arvuti jagab sulle uued kaardid ja teatab kas tegemist on võidukombinatsiooniga.
 Mäng lõppeb, kui bilanss on 0 või kui mängija vajutab "Cash Out" nuppu, et salvestada skoor edetabelisse, kui see mahub top 10 parima sekka.
 
 Võidukombinatsioonid:
-*1 paar – kaks ühesugust soldatit, emandat, kuningat ja ässa
+*1 paar – kaks ühesugust soldatit, emandat, kuningat või ässa
 *2 paari – kaks paari ühesuguseid kaarte, näiteks kuningad ja ässad
 *Kolmik – kolm ühesugust kaarti, näiteks seitsmed
 *Rida – viis järjestikust kaarti, näiteks 3, 4, 5, 6 ja 7
