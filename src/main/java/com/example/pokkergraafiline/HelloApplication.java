@@ -322,6 +322,24 @@ public class HelloApplication extends Application {
             mangija.setHetkeBalanss(100);
             mangija.setNimi(sisend.getEditor().getText());
 
+            kaart1Kuva.setImage(new Image("/kaardid/tagus.png"));
+            kaart2Kuva.setImage(new Image("/kaardid/tagus.png"));
+            kaart3Kuva.setImage(new Image("/kaardid/tagus.png"));
+            kaart4Kuva.setImage(new Image("/kaardid/tagus.png"));
+            kaart5Kuva.setImage(new Image("/kaardid/tagus.png"));
+
+            kaart1Nupp.setText("O");
+            kaart2Nupp.setText("O");
+            kaart3Nupp.setText("O");
+            kaart4Nupp.setText("O");
+            kaart5Nupp.setText("O");
+
+            hetkeBilanss.setText("Bilanss: " + mangija.getHetkeBalanss());
+
+            teostaVahetusNupp.setText("Vaata kaarte");
+            info.setText("Sisesta soovitud panus");
+            hetkePanus.setDisable(false);
+
             stage.setScene(kaardid);
         });
 
@@ -427,6 +445,9 @@ public class HelloApplication extends Application {
             while ((tekst = tulemusteread.readLine()) != null) {
                 tulemustetekst.append(tekst).append("\n");
             }
+        } catch (FileNotFoundException e) { //Ainukene erind, millest taastuda saame
+            //Kui sellist faili pole, kuvame tablool vastava sõnumi
+            return "Ühtegi tulemust pole veel salvestatud!";
         } catch (IOException e) {
             e.printStackTrace();
         }
