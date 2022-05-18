@@ -363,6 +363,7 @@ public class HelloApplication extends Application {
         Label reeglitiitel = new Label("Reeglid:");
         reeglitiitel.setFont(Font.font(20));
         Label reegliL = new Label(kuvaTulemusFailist("reeglid.txt"));
+        reegliL.setWrapText(true);
         reegliL.setFont(Font.font(15));
         reegliteV.getChildren().addAll(reeglitiitel, reegliL, tagasi);
 
