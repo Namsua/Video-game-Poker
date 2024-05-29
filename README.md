@@ -1,1 +1,0 @@
-Javaga tehtud videopokkeri mäng.
